@@ -2,6 +2,8 @@ package wanglijun.vip.weather.util;
 
 import android.text.TextUtils;
 
+import com.google.gson.Gson;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,6 +11,7 @@ import org.json.JSONObject;
 import wanglijun.vip.weather.db.City;
 import wanglijun.vip.weather.db.County;
 import wanglijun.vip.weather.db.Province;
+import wanglijun.vip.weather.gson.Weather;
 
 /**
  * @author： wlj
@@ -87,7 +90,24 @@ public class Utility {
         return false;
     }
 
+    /**
+     * 将返回的json数据解析成Weather实体类
+     *
+     * @param response
+     * @return
+     */
+    public static Weather handleWeatherResponse(String response) {
+        try {
+            final JSONObject jsonObject = new JSONObject(response);
+            final JSONArray jsonArray = jsonObject.getJSONArray("HeWeather");
+            final String weatherContent = jsonArray.getJSONObject(0).toString();
+            return new Gson().fromJson(weatherContent, Weather.class);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
 
+    }
 
 
 }
