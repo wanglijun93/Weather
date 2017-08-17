@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,16 +46,18 @@ public class WeatherActivity extends AppCompatActivity {
     private SharedPreferences mSharedPreferences;
     private String mWeatherString;
     private ImageView mBingPicImg;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private String mWeatherId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
         //当手机系统大于5.0 执行以下代码
-        if(Build.VERSION.SDK_INT >= 21){
+        if (Build.VERSION.SDK_INT >= 21) {
             final View decorView = getWindow().getDecorView();
             decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             );
             //将状态栏设置为透明
             getWindow().setStatusBarColor(Color.TRANSPARENT);
@@ -67,13 +70,20 @@ public class WeatherActivity extends AppCompatActivity {
         if (mWeatherString != null) {
             //有缓存直接解析天气数据
             Weather weather = Utility.handleWeatherResponse(mWeatherString);
+            mWeatherId = weather.basic.weatherId;
             showWeatherInfo(weather);
         } else {
             //无缓存时从服务器查询数据
-            final String weatherId = getIntent().getStringExtra("weather_id");
+            mWeatherId = getIntent().getStringExtra("weather_id");
             mWeatherLayout.setVisibility(View.INVISIBLE);
-            requestWeather(weatherId);
+            requestWeather(mWeatherId);
         }
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestWeather(mWeatherId);
+            }
+        });
         //加载 必应每日一图
         final String bingPic = mSharedPreferences.getString("bing_pic", null);
         if (bingPic != null) {
@@ -129,6 +139,9 @@ public class WeatherActivity extends AppCompatActivity {
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mWeatherString = mSharedPreferences.getString("weather", null);
         mBingPicImg = (ImageView) findViewById(R.id.bing_pic_img);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+        //设置下拉刷新进度条的颜色
+        mSwipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
     }
 
     /**
@@ -146,6 +159,7 @@ public class WeatherActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Toast.makeText(WeatherActivity.this, "获取天气失败", Toast.LENGTH_SHORT).show();
+                        mSwipeRefreshLayout.setRefreshing(false);
                     }
                 });
             }
@@ -162,6 +176,10 @@ public class WeatherActivity extends AppCompatActivity {
                             edit.putString("weather", responseText);
                             edit.apply();
                             showWeatherInfo(weather);
+                        } else {
+                            Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
+                            //刷新事件结束，隐藏进度条
+                            mSwipeRefreshLayout.setRefreshing(false);
                         }
                     }
                 });
