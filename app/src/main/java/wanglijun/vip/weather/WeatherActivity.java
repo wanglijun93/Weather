@@ -1,5 +1,6 @@
 package wanglijun.vip.weather;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -27,6 +28,7 @@ import java.io.IOException;
 
 import wanglijun.vip.weather.gson.Forecast;
 import wanglijun.vip.weather.gson.Weather;
+import wanglijun.vip.weather.service.AutoUpdateService;
 import wanglijun.vip.weather.util.HttpUtil;
 import wanglijun.vip.weather.util.Utility;
 
@@ -240,5 +242,8 @@ public class WeatherActivity extends AppCompatActivity {
         mCarWashText.setText(carWash);
         mSportText.setText(sport);
         mWeatherLayout.setVisibility(View.VISIBLE);
+        //开启自动更新天气服务
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 }
