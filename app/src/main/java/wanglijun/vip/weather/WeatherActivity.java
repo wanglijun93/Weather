@@ -1,6 +1,8 @@
 package wanglijun.vip.weather;
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -48,6 +50,15 @@ public class WeatherActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
+        //当手机系统大于5.0 执行以下代码
+        if(Build.VERSION.SDK_INT >= 21){
+            final View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            );
+            //将状态栏设置为透明
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+        }
         initButton();
         initIf();
     }
